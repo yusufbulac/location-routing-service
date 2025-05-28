@@ -2,47 +2,19 @@ package service
 
 import (
 	"errors"
+	"github.com/yusufbulac/location-routing-service/internal/mock"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/yusufbulac/location-routing-service/internal/model"
 )
 
-// --- Mock Repository ---
-
-type mockLocationRepo struct {
-	mock.Mock
-}
-
-func (m *mockLocationRepo) Create(location *model.Location) error {
-	args := m.Called(location)
-	return args.Error(0)
-}
-
-func (m *mockLocationRepo) FindAll() ([]model.Location, error) {
-	args := m.Called()
-	return args.Get(0).([]model.Location), args.Error(1)
-}
-
-func (m *mockLocationRepo) FindByID(id uint) (*model.Location, error) {
-	args := m.Called(id)
-	return args.Get(0).(*model.Location), args.Error(1)
-}
-
-func (m *mockLocationRepo) Update(location *model.Location) error {
-	args := m.Called(location)
-	return args.Error(0)
-}
-
 // --- Unit Tests ---
-
 func TestCreateLocation(t *testing.T) {
-	mockRepo := new(mockLocationRepo)
+	mockRepo := new(mock.MockLocationRepository)
 	service := NewLocationService(mockRepo)
 
 	location := &model.Location{Name: "Test", Latitude: 1.0, Longitude: 1.0, Color: "#FFFFFF"}
-
 	mockRepo.On("Create", location).Return(nil)
 
 	err := service.CreateLocation(location)
@@ -51,14 +23,13 @@ func TestCreateLocation(t *testing.T) {
 }
 
 func TestGetAllLocations(t *testing.T) {
-	mockRepo := new(mockLocationRepo)
+	mockRepo := new(mock.MockLocationRepository)
 	service := NewLocationService(mockRepo)
 
 	expected := []model.Location{
 		{Name: "Loc1", Latitude: 10, Longitude: 20, Color: "#000000"},
 		{Name: "Loc2", Latitude: 30, Longitude: 40, Color: "#FFFFFF"},
 	}
-
 	mockRepo.On("FindAll").Return(expected, nil)
 
 	locations, err := service.GetAllLocations()
@@ -68,11 +39,10 @@ func TestGetAllLocations(t *testing.T) {
 }
 
 func TestGetLocationByID_Success(t *testing.T) {
-	mockRepo := new(mockLocationRepo)
+	mockRepo := new(mock.MockLocationRepository)
 	service := NewLocationService(mockRepo)
 
 	expected := &model.Location{ID: 1, Name: "Loc", Latitude: 10, Longitude: 20, Color: "#ABCDEF"}
-
 	mockRepo.On("FindByID", uint(1)).Return(expected, nil)
 
 	location, err := service.GetLocationByID(1)
@@ -82,7 +52,7 @@ func TestGetLocationByID_Success(t *testing.T) {
 }
 
 func TestGetLocationByID_NotFound(t *testing.T) {
-	mockRepo := new(mockLocationRepo)
+	mockRepo := new(mock.MockLocationRepository)
 	service := NewLocationService(mockRepo)
 
 	mockRepo.On("FindByID", uint(999)).Return(&model.Location{}, errors.New("not found"))
@@ -93,14 +63,37 @@ func TestGetLocationByID_NotFound(t *testing.T) {
 }
 
 func TestUpdateLocation(t *testing.T) {
-	mockRepo := new(mockLocationRepo)
+	mockRepo := new(mock.MockLocationRepository)
 	service := NewLocationService(mockRepo)
 
 	location := &model.Location{ID: 1, Name: "Updated", Latitude: 11, Longitude: 22, Color: "#FF00FF"}
-
 	mockRepo.On("Update", location).Return(nil)
 
 	err := service.UpdateLocation(location)
 	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestGetRouteFrom(t *testing.T) {
+	mockRepo := new(mock.MockLocationRepository)
+	service := NewLocationService(mockRepo)
+
+	mockLocations := []model.Location{
+		{ID: 1, Name: "A", Latitude: 41.0, Longitude: 28.0},
+		{ID: 2, Name: "B", Latitude: 41.1, Longitude: 29.0},
+		{ID: 3, Name: "C", Latitude: 41.11, Longitude: 29.01},
+	}
+	mockRepo.On("FindAll").Return(mockLocations, nil)
+
+	referenceLat := 41.11
+	referenceLng := 29.02
+
+	result, err := service.GetRouteFrom(referenceLat, referenceLng)
+
+	assert.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "C", result[0].Name)
+	assert.Equal(t, "B", result[1].Name)
+	assert.Equal(t, "A", result[2].Name)
 	mockRepo.AssertExpectations(t)
 }

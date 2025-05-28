@@ -50,6 +50,7 @@ func main() {
 		api.GET("/locations", locationHandler.GetAllLocations)
 		api.GET("/locations/:id", locationHandler.GetLocationByID)
 		api.PUT("/locations/:id", locationHandler.UpdateLocation)
+		api.GET("/route", locationHandler.GetRoute)
 	}
 
 	// graceful shutdown setup

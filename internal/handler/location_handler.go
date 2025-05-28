@@ -143,3 +143,33 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 
 	c.JSON(http.StatusOK, location)
 }
+
+// GetRoute godoc
+// @Summary Get route starting from closest location
+// @Tags locations
+// @Produce json
+// @Param lat query number true "Reference latitude"
+// @Param lng query number true "Reference longitude"
+// @Success 200 {array} model.Location
+// @Failure 400 {object} dto.ErrorResponse
+// @Router /api/v1/route [get]
+func (h *LocationHandler) GetRoute(c *gin.Context) {
+	latParam := c.Query("lat")
+	lngParam := c.Query("lng")
+
+	lat, err1 := strconv.ParseFloat(latParam, 64)
+	lng, err2 := strconv.ParseFloat(lngParam, 64)
+
+	if err1 != nil || err2 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lat/lng"})
+		return
+	}
+
+	result, err := h.service.GetRouteFrom(lat, lng)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch route"})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
