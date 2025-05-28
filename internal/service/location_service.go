@@ -1,12 +1,16 @@
 package service
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/yusufbulac/location-routing-service/internal/cache"
 	"github.com/yusufbulac/location-routing-service/internal/logger"
 	"github.com/yusufbulac/location-routing-service/internal/model"
 	"github.com/yusufbulac/location-routing-service/internal/repository"
 	"go.uber.org/zap"
 	"math"
 	"sort"
+	"time"
 )
 
 type LocationService interface {
@@ -52,6 +56,16 @@ func (s *locationService) GetPaginatedLocations(limit, offset int) ([]model.Loca
 }
 
 func (s *locationService) GetRouteFrom(lat, lng float64) ([]model.Location, error) {
+	key := fmt.Sprintf("route:%.4f:%.4f", lat, lng)
+
+	// check redis
+	if cached, err := cache.Redis.Get(cache.Ctx, key).Result(); err == nil {
+		var locations []model.Location
+		if err := json.Unmarshal([]byte(cached), &locations); err == nil {
+			return locations, nil
+		}
+	}
+
 	locations, err := s.repo.FindAll()
 	if err != nil {
 		return nil, err
@@ -62,6 +76,11 @@ func (s *locationService) GetRouteFrom(lat, lng float64) ([]model.Location, erro
 		distB := haversine(lat, lng, locations[j].Latitude, locations[j].Longitude)
 		return distA < distB
 	})
+
+	// add cache
+	if jsonBytes, err := json.Marshal(locations); err == nil {
+		cache.Redis.Set(cache.Ctx, key, jsonBytes, 5*time.Minute)
+	}
 
 	return locations, nil
 }

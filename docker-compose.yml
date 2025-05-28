@@ -24,6 +24,7 @@ services:
       - "8080:8080"
     depends_on:
       - mysql
+      - redis
     env_file:
       - .env
     restart: on-failure
@@ -35,6 +36,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  redis:
+    image: redis:latest
+    container_name: loc_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - location_network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   location_network:

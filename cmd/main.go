@@ -6,6 +6,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "github.com/yusufbulac/location-routing-service/docs"
+	"github.com/yusufbulac/location-routing-service/internal/cache"
 	"github.com/yusufbulac/location-routing-service/internal/config"
 	"github.com/yusufbulac/location-routing-service/internal/handler"
 	"github.com/yusufbulac/location-routing-service/internal/logger"
@@ -29,6 +30,7 @@ func main() {
 	logger.InitLogger()
 	defer logger.Log.Sync()
 
+	cache.InitRedis()
 	config.ConnectDatabase()
 
 	r := gin.Default()
