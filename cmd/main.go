@@ -23,7 +23,7 @@ import (
 // @version 1.0
 // @description API for managing and routing locations.
 // @host localhost:8080
-// @BasePath /
+// @BasePath /api/v1
 func main() {
 	config.ConnectDatabase()
 
@@ -32,6 +32,7 @@ func main() {
 	// middlewares
 	r.Use(middleware.RateLimitMiddleware())
 
+	// dependencies
 	locationRepo := repository.NewLocationRepository(config.DB)
 	locationService := service.NewLocationService(locationRepo)
 	locationHandler := handler.NewLocationHandler(locationService)
@@ -51,6 +52,7 @@ func main() {
 		api.PUT("/locations/:id", locationHandler.UpdateLocation)
 	}
 
+	// graceful shutdown setup
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r,
