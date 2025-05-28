@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/yusufbulac/location-routing-service/internal/dto"
 	"net/http"
 	"strconv"
 
@@ -19,10 +20,22 @@ func NewLocationHandler(s service.LocationService) *LocationHandler {
 
 // POST /locations
 func (h *LocationHandler) CreateLocation(c *gin.Context) {
-	var location model.Location
-	if err := c.ShouldBindJSON(&location); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	var req dto.LocationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
+	}
+
+	if err := validate.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": FormatValidationError(err)})
+		return
+	}
+
+	location := model.Location{
+		Name:      req.Name,
+		Latitude:  req.Latitude,
+		Longitude: req.Longitude,
+		Color:     req.Color,
 	}
 
 	if err := h.service.CreateLocation(&location); err != nil {
@@ -71,13 +84,24 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 		return
 	}
 
-	var location model.Location
-	if err := c.ShouldBindJSON(&location); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	var req dto.LocationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
 
-	location.ID = uint(id)
+	if err := validate.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": FormatValidationError(err)})
+		return
+	}
+
+	location := model.Location{
+		ID:        uint(id),
+		Name:      req.Name,
+		Latitude:  req.Latitude,
+		Longitude: req.Longitude,
+		Color:     req.Color,
+	}
 
 	if err := h.service.UpdateLocation(&location); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update location"})
