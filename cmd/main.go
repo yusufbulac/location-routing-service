@@ -8,6 +8,7 @@ import (
 	_ "github.com/yusufbulac/location-routing-service/docs"
 	"github.com/yusufbulac/location-routing-service/internal/config"
 	"github.com/yusufbulac/location-routing-service/internal/handler"
+	"github.com/yusufbulac/location-routing-service/internal/logger"
 	"github.com/yusufbulac/location-routing-service/internal/middleware"
 	"github.com/yusufbulac/location-routing-service/internal/repository"
 	"github.com/yusufbulac/location-routing-service/internal/service"
@@ -25,11 +26,16 @@ import (
 // @host localhost:8080
 // @BasePath /api/v1
 func main() {
+	logger.InitLogger()
+	defer logger.Log.Sync()
+
 	config.ConnectDatabase()
 
 	r := gin.Default()
+	r.Use(gin.Recovery())
 
 	// middlewares
+	r.Use(middleware.ZapLogger())
 	r.Use(middleware.RateLimitMiddleware())
 
 	// dependencies

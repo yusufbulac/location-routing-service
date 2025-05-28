@@ -2,7 +2,9 @@ package handler
 
 import (
 	"github.com/yusufbulac/location-routing-service/internal/dto"
+	"github.com/yusufbulac/location-routing-service/internal/logger"
 	"github.com/yusufbulac/location-routing-service/internal/validation"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 
@@ -32,6 +34,7 @@ func NewLocationHandler(s service.LocationService) *LocationHandler {
 func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	var req dto.LocationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Warn("Invalid JSON received", zap.Error(err))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid JSON",
 		})
@@ -39,6 +42,7 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	}
 
 	if err := validation.Validator.Struct(req); err != nil {
+		logger.Warn("Validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Validation failed",
 			Details: validation.FormatValidationError(err),
@@ -54,12 +58,14 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	}
 
 	if err := h.service.CreateLocation(&location); err != nil {
+		logger.Error("Could not create location", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Could not create location",
 		})
 		return
 	}
 
+	logger.Info("Location created successfully", zap.String("name", location.Name))
 	c.JSON(http.StatusCreated, location)
 }
 
@@ -73,12 +79,14 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 func (h *LocationHandler) GetAllLocations(c *gin.Context) {
 	locations, err := h.service.GetAllLocations()
 	if err != nil {
+		logger.Error("Failed to fetch locations", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Could not fetch locations",
 		})
 		return
 	}
 
+	logger.Info("Fetched all locations", zap.Int("count", len(locations)))
 	c.JSON(http.StatusOK, locations)
 }
 
@@ -95,6 +103,7 @@ func (h *LocationHandler) GetLocationByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
+		logger.Warn("Invalid ID parameter", zap.String("id", idParam))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid ID",
 		})
@@ -103,12 +112,14 @@ func (h *LocationHandler) GetLocationByID(c *gin.Context) {
 
 	location, err := h.service.GetLocationByID(uint(id))
 	if err != nil {
+		logger.Warn("Location not found", zap.Int("id", id))
 		c.JSON(http.StatusNotFound, dto.ErrorResponse{
 			Message: "Location not found",
 		})
 		return
 	}
 
+	logger.Info("Fetched location by ID", zap.Int("id", id))
 	c.JSON(http.StatusOK, location)
 }
 
@@ -127,6 +138,7 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
+		logger.Warn("Invalid ID parameter", zap.String("id", idParam))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid ID",
 		})
@@ -135,6 +147,7 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 
 	var req dto.LocationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Warn("Invalid JSON received", zap.Error(err))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid JSON",
 		})
@@ -142,6 +155,7 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	}
 
 	if err := validation.Validator.Struct(req); err != nil {
+		logger.Warn("Validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Validation failed",
 			Details: validation.FormatValidationError(err),
@@ -158,12 +172,14 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	}
 
 	if err := h.service.UpdateLocation(&location); err != nil {
+		logger.Error("Could not update location", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Could not update location",
 		})
 		return
 	}
 
+	logger.Info("Location updated", zap.Int("id", id))
 	c.JSON(http.StatusOK, location)
 }
 
@@ -184,6 +200,7 @@ func (h *LocationHandler) GetRoute(c *gin.Context) {
 	lng, err2 := strconv.ParseFloat(lngParam, 64)
 
 	if err1 != nil || err2 != nil {
+		logger.Warn("Invalid lat/lng parameters", zap.String("lat", latParam), zap.String("lng", lngParam))
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Message: "Invalid lat/lng",
 		})
@@ -192,11 +209,13 @@ func (h *LocationHandler) GetRoute(c *gin.Context) {
 
 	result, err := h.service.GetRouteFrom(lat, lng)
 	if err != nil {
+		logger.Error("Failed to compute route", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Could not fetch route",
 		})
 		return
 	}
 
+	logger.Info("Route fetched", zap.Int("count", len(result)))
 	c.JSON(http.StatusOK, result)
 }
