@@ -18,7 +18,16 @@ func NewLocationHandler(s service.LocationService) *LocationHandler {
 	return &LocationHandler{service: s}
 }
 
-// POST /locations
+// CreateLocation godoc
+// @Summary Add new location
+// @Description Adds a new location with name, coordinates and color
+// @Tags locations
+// @Accept json
+// @Produce json
+// @Param location body dto.LocationRequest true "Location JSON"
+// @Success 201 {object} model.Location
+// @Failure 400 {object} dto.ErrorResponse
+// @Router /locations [post]
 func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	var req dto.LocationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -46,7 +55,13 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	c.JSON(http.StatusCreated, location)
 }
 
-// GET /locations
+// GetAllLocations godoc
+// @Summary List all locations
+// @Tags locations
+// @Produce json
+// @Success 200 {array} model.Location
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /locations [get]
 func (h *LocationHandler) GetAllLocations(c *gin.Context) {
 	locations, err := h.service.GetAllLocations()
 	if err != nil {
@@ -57,7 +72,15 @@ func (h *LocationHandler) GetAllLocations(c *gin.Context) {
 	c.JSON(http.StatusOK, locations)
 }
 
-// GET /locations/:id
+// GetLocationByID godoc
+// @Summary Get location by ID
+// @Tags locations
+// @Produce json
+// @Param id path int true "Location ID"
+// @Success 200 {object} model.Location
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Router /locations/{id} [get]
 func (h *LocationHandler) GetLocationByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -75,7 +98,17 @@ func (h *LocationHandler) GetLocationByID(c *gin.Context) {
 	c.JSON(http.StatusOK, location)
 }
 
-// PUT /locations/:id
+// UpdateLocation godoc
+// @Summary Update an existing location
+// @Tags locations
+// @Accept json
+// @Produce json
+// @Param id path int true "Location ID"
+// @Param location body dto.LocationRequest true "Location JSON"
+// @Success 200 {object} model.Location
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /locations/{id} [put]
 func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
