@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: locations_db
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: locations_user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - location_network
+
+  app:
+    build: .
+    container_name: golang_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - location_network
+
+networks:
+  location_network:
+    driver: bridge
+    name: location_network
+
+volumes:
+  mysql_data:

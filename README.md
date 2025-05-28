@@ -46,6 +46,8 @@ A backend service built with Golang and Gin framework for managing and routing g
 git clone https://github.com/yusufbulac/location-routing-service.git
 cd location-routing-service
 
+cp .env.example .env
+
 # Start services
 docker-compose up --build
 ```

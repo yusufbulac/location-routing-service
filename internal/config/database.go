@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/yusufbulac/location-routing-service/internal/model"
 	"log"
 	"os"
@@ -13,13 +14,17 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env not found, using environment variables only")
+	}
+
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		getEnv("DB_USER", "root"),
+		getEnv("DB_USER", ""),
 		getEnv("DB_PASSWORD", ""),
-		getEnv("DB_HOST", "localhost"),
-		getEnv("DB_PORT", "3306"),
-		getEnv("DB_NAME", "yukatech"),
+		getEnv("DB_HOST", ""),
+		getEnv("DB_PORT", ""),
+		getEnv("DB_NAME", ""),
 	)
 
 	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
