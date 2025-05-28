@@ -1,8 +1,10 @@
 package service
 
 import (
+	"github.com/yusufbulac/location-routing-service/internal/logger"
 	"github.com/yusufbulac/location-routing-service/internal/model"
 	"github.com/yusufbulac/location-routing-service/internal/repository"
+	"go.uber.org/zap"
 	"math"
 	"sort"
 )
@@ -36,7 +38,12 @@ func (s *locationService) GetLocationByID(id uint) (*model.Location, error) {
 }
 
 func (s *locationService) UpdateLocation(location *model.Location) error {
-	return s.repo.Update(location)
+	err := s.repo.Update(location)
+	if err != nil {
+		logger.Error("UpdateLocation failed", zap.Error(err), zap.Uint("id", location.ID))
+		return err
+	}
+	return nil
 }
 
 func (s *locationService) GetRouteFrom(lat, lng float64) ([]model.Location, error) {

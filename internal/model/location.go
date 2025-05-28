@@ -9,6 +9,6 @@ type Location struct {
 	Longitude float64 `gorm:"not null" json:"longitude"`
 	Color     string  `gorm:"type:char(7);not null" json:"color"`
 
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at" gorm:"<-:create"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
