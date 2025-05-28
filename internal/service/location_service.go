@@ -15,6 +15,7 @@ type LocationService interface {
 	GetLocationByID(id uint) (*model.Location, error)
 	UpdateLocation(location *model.Location) error
 	GetRouteFrom(lat, lng float64) ([]model.Location, error)
+	GetPaginatedLocations(limit, offset int) ([]model.Location, error)
 }
 
 type locationService struct {
@@ -44,6 +45,10 @@ func (s *locationService) UpdateLocation(location *model.Location) error {
 		return err
 	}
 	return nil
+}
+
+func (s *locationService) GetPaginatedLocations(limit, offset int) ([]model.Location, error) {
+	return s.repo.GetPaginatedLocations(limit, offset)
 }
 
 func (s *locationService) GetRouteFrom(lat, lng float64) ([]model.Location, error) {

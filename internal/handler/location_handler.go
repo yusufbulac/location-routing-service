@@ -73,20 +73,36 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 // @Summary List all locations
 // @Tags locations
 // @Produce json
+// @Param limit query int false "Limit"
+// @Param offset query int false "Offset"
 // @Success 200 {array} model.Location
+// @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
 // @Router /api/v1/locations [get]
 func (h *LocationHandler) GetAllLocations(c *gin.Context) {
-	locations, err := h.service.GetAllLocations()
+	limitParam := c.DefaultQuery("limit", "10")
+	offsetParam := c.DefaultQuery("offset", "0")
+
+	limit, err1 := strconv.Atoi(limitParam)
+	offset, err2 := strconv.Atoi(offsetParam)
+	if err1 != nil || err2 != nil || limit < 1 || offset < 0 {
+		logger.Warn("Invalid pagination parameters", zap.String("limit", limitParam), zap.String("offset", offsetParam))
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid pagination parameters",
+		})
+		return
+	}
+
+	locations, err := h.service.GetPaginatedLocations(limit, offset)
 	if err != nil {
-		logger.Error("Failed to fetch locations", zap.Error(err))
+		logger.Error("Failed to fetch paginated locations", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Could not fetch locations",
 		})
 		return
 	}
 
-	logger.Info("Fetched all locations", zap.Int("count", len(locations)))
+	logger.Info("Fetched paginated locations", zap.Int("count", len(locations)))
 	c.JSON(http.StatusOK, locations)
 }
 

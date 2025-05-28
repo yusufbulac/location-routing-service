@@ -11,6 +11,7 @@ type LocationRepository interface {
 	FindAll() ([]model.Location, error)
 	FindByID(id uint) (*model.Location, error)
 	Update(location *model.Location) error
+	GetPaginatedLocations(limit, offset int) ([]model.Location, error)
 }
 
 type locationRepository struct {
@@ -42,4 +43,12 @@ func (r *locationRepository) FindByID(id uint) (*model.Location, error) {
 
 func (r *locationRepository) Update(location *model.Location) error {
 	return r.db.Save(location).Error
+}
+
+func (r *locationRepository) GetPaginatedLocations(limit, offset int) ([]model.Location, error) {
+	var locations []model.Location
+	if err := r.db.Limit(limit).Offset(offset).Order("id").Find(&locations).Error; err != nil {
+		return nil, err
+	}
+	return locations, nil
 }
