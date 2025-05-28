@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/yusufbulac/location-routing-service/internal/dto"
+	"github.com/yusufbulac/location-routing-service/internal/validation"
 	"net/http"
 	"strconv"
 
@@ -31,12 +32,17 @@ func NewLocationHandler(s service.LocationService) *LocationHandler {
 func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	var req dto.LocationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid JSON",
+		})
 		return
 	}
 
-	if err := validate.Struct(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": FormatValidationError(err)})
+	if err := validation.Validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Validation failed",
+			Details: validation.FormatValidationError(err),
+		})
 		return
 	}
 
@@ -48,7 +54,9 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	}
 
 	if err := h.service.CreateLocation(&location); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create location"})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Could not create location",
+		})
 		return
 	}
 
@@ -65,7 +73,9 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 func (h *LocationHandler) GetAllLocations(c *gin.Context) {
 	locations, err := h.service.GetAllLocations()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch locations"})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Could not fetch locations",
+		})
 		return
 	}
 
@@ -85,13 +95,17 @@ func (h *LocationHandler) GetLocationByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid ID",
+		})
 		return
 	}
 
 	location, err := h.service.GetLocationByID(uint(id))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Location not found"})
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Message: "Location not found",
+		})
 		return
 	}
 
@@ -113,18 +127,25 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid ID",
+		})
 		return
 	}
 
 	var req dto.LocationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid JSON",
+		})
 		return
 	}
 
-	if err := validate.Struct(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": FormatValidationError(err)})
+	if err := validation.Validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Validation failed",
+			Details: validation.FormatValidationError(err),
+		})
 		return
 	}
 
@@ -137,7 +158,9 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	}
 
 	if err := h.service.UpdateLocation(&location); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update location"})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Could not update location",
+		})
 		return
 	}
 
@@ -161,13 +184,17 @@ func (h *LocationHandler) GetRoute(c *gin.Context) {
 	lng, err2 := strconv.ParseFloat(lngParam, 64)
 
 	if err1 != nil || err2 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lat/lng"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "Invalid lat/lng",
+		})
 		return
 	}
 
 	result, err := h.service.GetRouteFrom(lat, lng)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch route"})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Could not fetch route",
+		})
 		return
 	}
 

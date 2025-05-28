@@ -1,11 +1,10 @@
-package handler
+package validation
 
 import (
-	"github.com/go-playground/validator/v10"
 	"strings"
-)
 
-var validate = validator.New()
+	"github.com/go-playground/validator/v10"
+)
 
 func FormatValidationError(err error) string {
 	var sb strings.Builder
