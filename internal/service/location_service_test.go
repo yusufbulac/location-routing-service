@@ -38,6 +38,22 @@ func TestGetAllLocations(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
+func TestGetPaginatedLocations(t *testing.T) {
+	mockRepo := new(mock.MockLocationRepository)
+	service := NewLocationService(mockRepo)
+
+	expected := []model.Location{
+		{ID: 1, Name: "Pag1", Latitude: 10, Longitude: 10, Color: "#111111"},
+		{ID: 2, Name: "Pag2", Latitude: 20, Longitude: 20, Color: "#222222"},
+	}
+	mockRepo.On("GetPaginatedLocations", 2, 0).Return(expected, nil)
+
+	locations, err := service.GetPaginatedLocations(2, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, locations)
+	mockRepo.AssertExpectations(t)
+}
+
 func TestGetLocationByID_Success(t *testing.T) {
 	mockRepo := new(mock.MockLocationRepository)
 	service := NewLocationService(mockRepo)

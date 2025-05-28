@@ -29,3 +29,8 @@ func (m *MockLocationRepository) Update(location *model.Location) error {
 	args := m.Called(location)
 	return args.Error(0)
 }
+
+func (m *MockLocationRepository) GetPaginatedLocations(limit int, offset int) ([]model.Location, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Location), args.Error(1)
+}

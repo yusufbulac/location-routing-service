@@ -121,3 +121,17 @@ func TestUpdateLocation_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	t.Log("Expected not found when updating non-existent location")
 }
+
+func TestGetAllLocationsPagination(t *testing.T) {
+	resp := testutils.Get(t, "/api/v1/locations?limit=2&offset=1")
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	body := readAndLogBody(t, resp)
+
+	var locations []model.Location
+	err := json.Unmarshal(body, &locations)
+	require.NoError(t, err, "Failed to decode paginated locations list JSON")
+	assert.LessOrEqual(t, len(locations), 2, "Returned more than limit")
+}
