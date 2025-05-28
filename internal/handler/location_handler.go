@@ -163,15 +163,22 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 		return
 	}
 
-	location := model.Location{
-		ID:        uint(id),
-		Name:      req.Name,
-		Latitude:  req.Latitude,
-		Longitude: req.Longitude,
-		Color:     req.Color,
+	existing, err := h.service.GetLocationByID(uint(id))
+	if err != nil {
+		logger.Error("Location not found", zap.Error(err))
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Message: "Location not found",
+			Details: err.Error(),
+		})
+		return
 	}
 
-	if err := h.service.UpdateLocation(&location); err != nil {
+	existing.Name = req.Name
+	existing.Latitude = req.Latitude
+	existing.Longitude = req.Longitude
+	existing.Color = req.Color
+
+	if err := h.service.UpdateLocation(existing); err != nil {
 		logger.Error("Could not update location", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Message: "Could not update location",
@@ -180,7 +187,7 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	}
 
 	logger.Info("Location updated", zap.Int("id", id))
-	c.JSON(http.StatusOK, location)
+	c.JSON(http.StatusOK, existing)
 }
 
 // GetRoute godoc
