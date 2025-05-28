@@ -42,10 +42,14 @@ func main() {
 	})
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.POST("/locations", locationHandler.CreateLocation)
-	r.GET("/locations", locationHandler.GetAllLocations)
-	r.GET("/locations/:id", locationHandler.GetLocationByID)
-	r.PUT("/locations/:id", locationHandler.UpdateLocation)
+
+	api := r.Group("/api/v1")
+	{
+		api.POST("/locations", locationHandler.CreateLocation)
+		api.GET("/locations", locationHandler.GetAllLocations)
+		api.GET("/locations/:id", locationHandler.GetLocationByID)
+		api.PUT("/locations/:id", locationHandler.UpdateLocation)
+	}
 
 	srv := &http.Server{
 		Addr:    ":8080",

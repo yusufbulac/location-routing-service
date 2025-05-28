@@ -9,7 +9,7 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/locations": {
+        "/api/v1/locations": {
             "get": {
                 "produces": [
                     "application/json"
@@ -75,7 +75,7 @@
                 }
             }
         },
-        "/locations/{id}": {
+        "/api/v1/locations/{id}": {
             "get": {
                 "produces": [
                     "application/json"
