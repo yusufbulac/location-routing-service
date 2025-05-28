@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yusufbulac/location-routing-service/internal/config"
 	"github.com/yusufbulac/location-routing-service/internal/handler"
+	"github.com/yusufbulac/location-routing-service/internal/middleware"
 	"github.com/yusufbulac/location-routing-service/internal/repository"
 	"github.com/yusufbulac/location-routing-service/internal/service"
 )
@@ -12,6 +13,9 @@ func main() {
 	config.ConnectDatabase()
 
 	r := gin.Default()
+
+	// middlewares
+	r.Use(middleware.RateLimitMiddleware())
 
 	locationRepo := repository.NewLocationRepository(config.DB)
 	locationService := service.NewLocationService(locationRepo)
