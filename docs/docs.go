@@ -24,6 +24,20 @@ const docTemplate = `{
                     "locations"
                 ],
                 "summary": "List all locations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -32,6 +46,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/model.Location"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "500": {
@@ -170,13 +190,60 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/route": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "locations"
+                ],
+                "summary": "Get route starting from closest location",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "Reference latitude",
+                        "name": "lat",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Reference longitude",
+                        "name": "lng",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Location"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "dto.ErrorResponse": {
             "type": "object",
             "properties": {
-                "error": {
+                "details": {
+                    "type": "string"
+                },
+                "message": {
                     "type": "string"
                 }
             }
@@ -241,7 +308,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Location Routing Service API",
 	Description:      "API for managing and routing locations.",

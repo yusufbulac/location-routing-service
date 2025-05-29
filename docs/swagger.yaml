@@ -1,8 +1,10 @@
-basePath: /
+basePath: /api/v1
 definitions:
   dto.ErrorResponse:
     properties:
-      error:
+      details:
+        type: string
+      message:
         type: string
     type: object
   dto.LocationRequest:
@@ -51,6 +53,15 @@ info:
 paths:
   /api/v1/locations:
     get:
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -60,6 +71,10 @@ paths:
             items:
               $ref: '#/definitions/model.Location'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -149,6 +164,35 @@ paths:
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
       summary: Update an existing location
+      tags:
+      - locations
+  /api/v1/route:
+    get:
+      parameters:
+      - description: Reference latitude
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: Reference longitude
+        in: query
+        name: lng
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get route starting from closest location
       tags:
       - locations
 swagger: "2.0"
