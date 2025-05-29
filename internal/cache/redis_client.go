@@ -13,8 +13,9 @@ var Redis *redis.Client
 
 func InitRedis() {
 	Redis = redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_ADDR"),
-		DB:   0,
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
 	})
 
 	_, err := Redis.Ping(Ctx).Result()
